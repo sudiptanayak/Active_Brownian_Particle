@@ -21,6 +21,11 @@ box_length=30
 dirname1='../plots'
 dirname2='../data'
 
+#the basic idea is that the particle instances are embedded in an arena instance.
+#the paricle has x,y attribute corresponding to its coordinate in arena
+#and a theta attribute corresponding to its orientation of motion
+
+
 class particle: 
     def __init__(self,x_cor,y_cor,t):
         self.x=x_cor;
@@ -85,7 +90,8 @@ class arena:
         plt.savefig("%s/plot_at_%d.png"%(dirname1,i))
         plt.clf()
         plt.close('all')
-
+#the force is on particle 1 due to particle 2
+#it has been derived by differentiting WCA potential term with respect to coordinates of particles 1
 def force(par1,par2):
     delx=par1.x-par2.x
     dely=par1.y-par2.y
@@ -101,7 +107,8 @@ def force(par1,par2):
         return [f_x,f_y];
     else:
         return [0,0]
-    
+#forceij gives out a matrix where (i,j)th entry is a tuple
+#representing the force on ith particle by jth particle
 def forceij(aren):
     nos=len(aren.particles)
     flist=[]
@@ -124,7 +131,7 @@ def forceij(aren):
                 flist[j][i][0]=-1*temp[0]
                 flist[j][i][1]=-1*temp[1]
     return flist
-
+#the forcelist gives a linear list with ith entry being the total force on ith particle 
 def forcelist(aren):
     nos=len(aren.particles)
     fij=forceij(aren)
@@ -137,7 +144,7 @@ def forcelist(aren):
             temp[1]+=temp1[1]
         result.append(temp)
     return result
-
+#delrf gives the displacement of a particle due to force
 def delrf(aren):
     temp=forcelist(aren)
     result=[]
@@ -147,7 +154,7 @@ def delrf(aren):
         t[1]=dt*entry[1]
         result.append(t)
     return result
-
+#delr_therm gives displacement due to translational diffusion
 def delr_therm(aren):
     result=[]
     for entry in aren.particles:
@@ -156,7 +163,7 @@ def delr_therm(aren):
         temp[1]=m.sqrt(2*Dt*dt)*numpy.random.normal()
         result.append(temp)
     return result
-
+#delr_dir gives displacement due to orientation of the particle
 def delr_dir(aren):
     result=[]
     for entry in aren.particles:
@@ -169,12 +176,12 @@ def delr_dir(aren):
 
 
 
-
+#updates theta attribute for a particle
 def updatetheta(particl):
     add=m.sqrt(2*Dr*dt)*numpy.random.normal()
     t0=particl.theta+add
     particl.updatet(t0)
-
+#updates the whole arena for one time step
 def updatearena(aren):
     temp1=delrf(aren)
     temp2=delr_therm(aren)
@@ -195,7 +202,7 @@ def updatearena(aren):
         temppart.updatey(ty)
         updatetheta(temppart)
         
-    
+#updates arena for 'times' number of timesteps
 def updatetimes(aren,times):
     for i in range(times):
         updatearena(aren)
